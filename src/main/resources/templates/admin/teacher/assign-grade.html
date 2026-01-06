@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<div th:replace="admin/fragments/head :: head"></div>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <div th:replace="admin/fragments/header :: header"></div>
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="content-wrapper">
+
+        <section class="content-header">
+            <h1>Thêm khối giảng dạy</h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a th:href="@{/admin/teacher/index}">
+                        <i class="fa fa-users"></i> Danh sách giảng viên
+                    </a>
+                </li>
+                <li class="active">Thêm khối lớp giảng dạy</li>
+            </ol>
+        </section>
+
+        <section class="content">
+
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">
+                        Giảng viên:
+                        <strong th:text="${teacher.fullname}"></strong>
+                    </h3>
+                </div>
+
+                <form th:action="@{/admin/teacher/{id}/grades(id=${teacher.id})}"
+                      method="post">
+
+                    <div class="box-body">
+
+                        <p class="text-muted">
+                            Danh sách các khối mà giảng viên này được phân công giảng dạy
+                        </p>
+
+                        <div class="row">
+                            <div class="col-md-12">
+
+                                <label th:each="g : ${#numbers.sequence(1,12)}"
+                                       class="checkbox-inline"
+                                       style="margin-right:15px">
+                                    <input type="checkbox"
+                                           name="grades"
+                                           th:value="${g}"
+                                           th:checked="${assignedGrades.contains(g)}">
+                                    Khối <span th:text="${g}"></span>
+                                </label>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i> Lưu lại
+                        </button>
+
+                        <a th:href="@{/admin/teacher/index}"
+                           class="btn btn-default">
+                            Quay lại
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="box box-info">
+                <div class="box-header with-border">
+                    <h3 class="box-title">
+                        <i class="fa fa-history"></i> Lịch sử gán & bỏ gán các khối lớp giảng dạy
+                    </h3>
+                </div>
+
+                <div class="box-body">
+                    <table class="table table-bordered table-hover text-center">
+                        <thead>
+                        <tr>
+                            <th>Khối lớp</th>
+                            <th>Hành động</th>
+                            <th>Người thực hiện</th>
+                            <th>Thời gian thực hiện</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="h : ${histories}">
+                            <td th:text="'Khối ' + ${h.grade}"></td>
+
+                            <td>
+                                <span class="label label-success"
+                                      th:if="${h.action.name() == 'ASSIGN'}">
+                                    Gán khối
+                                </span>
+                                <span class="label label-danger"
+                                      th:if="${h.action.name() == 'UNASSIGN'}">
+                                    Bỏ gán khối
+                                </span>
+                            </td>
+
+                            <td th:text="${h.performedBy.fullname}"></td>
+
+                            <td th:text="${#temporals.format(h.actionAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(histories)}">
+                            <td colspan="4" class="text-muted">
+                                Chưa có lịch sử gán khối !
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="box-footer clearfix text-right"
+                         th:if="${totalPage > 1}">
+                        <ul class="pagination pagination-sm no-margin">
+
+                            <li th:if="${currentPage > 1}">
+                                <a th:href="@{/admin/teacher/{id}/grades(id=${teacher.id},pageNo=${currentPage - 1})}">
+                                    «
+                                </a>
+                            </li>
+
+                            <li class="active">
+                                <a th:text="${currentPage}"></a>
+                            </li>
+
+                            <li th:if="${currentPage < totalPage}">
+                                <a th:href="@{/admin/teacher/{id}/grades(id=${teacher.id},pageNo=${currentPage + 1})}">»</a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+    </div>
+</div>
+
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<div th:replace="admin/fragments/head :: head"></div>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <div th:replace="admin/fragments/header :: header"></div>
+
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="content-wrapper">
+
+        <!-- HEADER -->
+        <section class="content-header">
+            <h1>Gán giảng viên cho bài giảng</h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a th:href="@{/admin/dashboard/index}">
+                        <i class="fa fa-dashboard"></i> Trang chủ
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/lesson/index}">
+                        Quản lý bài giảng
+                    </a>
+                </li>
+                <li class="active">Gán giảng viên</li>
+            </ol>
+        </section>
+
+        <!-- MAIN CONTENT -->
+        <section class="content">
+
+            <div class="box box-primary">
+
+                <div class="box-header with-border">
+                    <h3 class="box-title">
+                        <i class="fa fa-book"></i>
+                        <span th:text="${lesson.name}"></span>
+                    </h3>
+                    <p class="text-muted">
+                        Mã bài giảng:
+                        <strong th:text="${lesson.code}"></strong>
+                    </p>
+                </div>
+
+                <form th:action="@{/admin/lesson/{id}/assign(id=${lesson.id})}"
+                      method="post">
+
+                    <div class="box-body">
+
+                        <div class="alert alert-info">
+                            <i class="fa fa-info-circle"></i>
+                            Chọn giảng viên được phép giảng dạy / quản lý bài giảng này
+                        </div>
+
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                            <tr class="bg-gray">
+                                <th style="width:60px">Chọn</th>
+                                <th>Tên giảng viên</th>
+                                <th>Email</th>
+                                <th>SĐT</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="t : ${teachers}">
+                                <td class="text-center">
+                                    <input type="checkbox"
+                                           name="teacherIds"
+                                           th:value="${t.id}"
+                                           th:checked="${assignedTeacherIds.contains(t.id)}">
+                                </td>
+                                <td th:text="${t.fullname}"></td>
+                                <td th:text="${t.email}"></td>
+                                <td th:text="${t.phone}"></td>
+                                <td>
+                                    <span class="label label-success"
+                                          th:if="${t.status.name() == 'ACTIVE'}">
+                                        Hoạt động
+                                    </span>
+                                    <span class="label label-danger"
+                                          th:if="${t.status.name() != 'ACTIVE'}">
+                                        Khoá
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(teachers)}">
+                                <td colspan="5" class="text-muted text-center">
+                                    Chưa có giảng viên nào trong hệ thống
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i> Lưu gán giảng viên
+                        </button>
+
+                        <a th:href="@{/admin/lesson/index}"
+                           class="btn btn-default">
+                            <i class="fa fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+    </div>
+</div>
+
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+
+</body>
+</html>

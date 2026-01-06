@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<div th:replace="admin/fragments/head :: head"></div>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <div th:replace="admin/fragments/header :: header"></div>
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="content-wrapper">
+
+        <section class="content-header">
+            <h1>Bài giảng</h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a th:href="@{/admin/dashboard/index}">
+                        <i class="fa fa-dashboard"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="active">Quản lý bài giảng</li>
+            </ol>
+        </section>
+
+        <section class="content">
+
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Danh sách bài giảng</h3>
+
+                    <div class="box-tools pull-right">
+                        <a th:href="@{/admin/lesson/create}"
+                           class="btn btn-primary btn-sm">
+                            <i class="fa fa-plus"></i> Thêm bài giảng
+                        </a>
+                    </div>
+                </div>
+
+                <div class="box-body">
+
+                    <form th:action="@{/admin/lesson/index}" method="get">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="text"
+                                       name="keyword"
+                                       class="form-control input-sm"
+                                       placeholder="Tìm theo mã hoặc tên bài giảng"
+                                       th:value="${keyword}">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-sm btn-info">
+                                    <i class="fa fa-search"></i> Tìm kiếm
+                                </button>
+                                <a th:href="@{/admin/lesson/index}"
+                                   class="btn btn-sm btn-default">
+                                    Tải lại
+                                </a>
+                            </div>
+
+                        </div>
+                    </form>
+
+
+                    <br />
+                    <table class="table table-bordered table-hover text-center">
+                        <thead>
+                        <tr>
+                            <th>Ảnh bìa</th>
+                            <th>Mã bài giảng</th>
+                            <th>Tên bài giảng</th>
+                            <th>Lớp giảng dạy</th>
+                            <th>Tháng</th>
+                            <th>Hành động</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="l : ${lesson}">
+                            <td>
+                                <img th:src="${l.coverImage != null ? l.coverImage :
+                                 '/assets/images/default_lesson.png'}" style="width:80px">
+                            </td>
+                            <td th:text="${l.code}"></td>
+                            <td th:text="${l.name}"></td>
+                            <td th:text="${l.grade}"></td>
+                            <td th:text="${l.teachingMonth}"></td>
+
+                            <td>
+                                <a th:href="@{/admin/lesson/{id}/content(id=${l.id})}"
+                                   class="btn btn-success btn-xs">
+                                    <i class="fa fa-folder-open"></i> Nội dung
+                                </a>
+
+                                <a th:href="@{/admin/lesson/{id}/assign(id=${l.id})}"
+                                   class="btn btn-primary btn-xs">
+                                    <i class="fa fa-user"></i> Gán GV
+                                </a>
+
+
+                                <a th:href="@{/admin/lesson/{id}(id=${l.id})}"
+                                   class="btn btn-info btn-xs">
+                                    <i class="fa fa-info"></i> Chi tiết
+                                </a>
+
+                                <a th:href="@{/admin/lesson/{id}/edit(id=${l.id})}"
+                                   class="btn btn-warning btn-xs">
+                                    <i class="fa fa-pencil"></i> Cập nhật
+                                </a>
+
+                                <form th:action="@{/admin/lesson/{id}/delete(id=${l.id})}"
+                                      method="post"
+                                      style="display:inline">
+                                    <button class="btn btn-danger btn-xs"
+                                            onclick="return confirm('Bạn có chắc muốn xoá bài giảng này?')">
+                                        <i class="fa fa-trash"></i> Xoá
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(lesson) and #strings.isEmpty(keyword)}">
+                            <td colspan="8" class="text-muted">
+                                Chưa có bài giảng nào trong hệ thống!
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(lesson) and not #strings.isEmpty(keyword)}">
+                            <td colspan="8" class="text-warning">
+                                Không tìm thấy bài giảng với từ khoá:
+                                <strong th:text="${keyword}"></strong>
+                            </td>
+                        </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PAGINATION -->
+                <div class="box-footer clearfix text-right">
+                    <ul class="pagination pagination-sm no-margin">
+
+                        <li th:if="${currentPage > 1}">
+                            <a th:href="@{/admin/lesson/index(pageNo=${currentPage-1},keyword=${keyword})}">
+                                «
+                            </a>
+                        </li>
+
+                        <li class="active">
+                            <a th:text="${currentPage}"></a>
+                        </li>
+
+                        <li th:if="${currentPage < totalPage}">
+                            <a th:href="@{/admin/lesson/index(pageNo=${currentPage+1},keyword=${keyword})}">
+                                »
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+
+</body>
+</html>

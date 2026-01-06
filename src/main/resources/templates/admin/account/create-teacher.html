@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="admin/fragments/head :: head"></head>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+
+    <div th:replace="admin/fragments/header :: header"></div>
+
+
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+
+    <div class="content-wrapper">
+
+
+        <section class="content-header">
+            <h1>
+                Tạo tài khoản giảng viên
+                <small>Quản lý người dùng hệ thống</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a th:href="@{/admin/dashboard/index}">
+                        <i class="fa fa-dashboard"></i> Trang chủ
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/account/index}">Quản lý tài khoản</a>
+                </li>
+                <li class="active">Thêm giảng viên</li>
+            </ol>
+        </section>
+
+        <section class="content">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">Thông tin giảng viên</h3>
+                        </div>
+
+                        <form th:action="@{/admin/account/create-teacher}"
+                              method="post"
+                              th:object="${teacher}">
+
+                            <div class="box-body">
+
+                                <div class="form-group">
+                                    <label><span style="color:#dd4b39;">*</span> Tên người dùng</label>
+                                    <input type="text" class="form-control"
+                                           placeholder="Nhập username"
+                                           th:field="*{username}">
+                                    <small class="text-danger"
+                                           th:errors="*{username}"></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><span style="color:#dd4b39;">*</span> Địa chỉ email giảng viên</label>
+                                    <input type="email" class="form-control"
+                                           placeholder="Nhập email"
+                                           th:field="*{email}">
+                                    <small class="text-danger"
+                                           th:errors="*{email}"></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><span style="color:#dd4b39;">*</span> Mật khẩu</label>
+                                    <input type="password" class="form-control"
+                                           placeholder="Nhập mật khẩu"
+                                           th:field="*{password}">
+                                    <small class="text-danger"
+                                           th:errors="*{password}"></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><span style="color:#dd4b39;">*</span> Họ và tên giảng viên</label>
+                                    <input type="text" class="form-control"
+                                           placeholder="Nhập họ tên"
+                                           th:field="*{fullname}">
+                                    <small class="text-danger"
+                                           th:errors="*{fullname}"></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><span style="color:#dd4b39;">*</span> Số điện thoại</label>
+                                    <input type="text" class="form-control"
+                                           placeholder="Nhập số điện thoại"
+                                           th:field="*{phone}">
+                                    <small class="text-danger"
+                                           th:errors="*{phone}"></small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><span style="color:#dd4b39;">*</span> Địa chỉ</label>
+                                    <input type="text" class="form-control"
+                                           placeholder="Nhập địa chỉ"
+                                           th:field="*{address}">
+                                    <small class="text-danger"
+                                           th:errors="*{address}"></small>
+                                </div>
+
+                            </div>
+
+                            <div class="box-footer">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fa fa-user-plus"></i> Tạo tài khoản
+                                </button>
+                                <a th:href="@{/admin/account/index}"
+                                   class="btn btn-default">
+                                    Huỷ
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+        </section>
+    </div>
+</div>
+
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+</body>
+</html>

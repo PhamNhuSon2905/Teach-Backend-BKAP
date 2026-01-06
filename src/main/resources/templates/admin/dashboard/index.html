@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<!-- Head-->
+<div th:replace="admin/fragments/head :: head"></div>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <!-- Header -->
+    <div th:replace="admin/fragments/header :: header"></div>
+
+    <!-- Sidebar -->
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+    <!-- Nội dung chính -->
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1 style="margin-left: 10px;">Trang quản trị</h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a th:href="@{/admin/dashboard/index}">
+                        <i class="fa fa-dashboard"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="active">Tổng quan </li>
+            </ol>
+        </section>
+
+        <section class="content">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Chào mừng đến trang quản trị hệ thống bài giảng !</h3>
+                </div>
+                <div class="box-body">
+                    <p>Sử dụng sidebar bên trái để quản lý bài giảng, tài khoản hoặc thông tin hệ thống.</p>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="small-box bg-aqua">
+                            <div class="inner">
+                                <h3 th:text="${totalUsers}"></h3>
+                                <p>Tổng tài khoản</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fa fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-green">
+                            <div class="inner">
+                                <h3 th:text="${totalTeachers}"></h3>
+                                <p>Giảng viên</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fa fa-user"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-yellow">
+                            <div class="inner">
+                                <h3 th:text="${totalLessons}"></h3>
+                                <p>Bài giảng</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fa fa-book"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-red">
+                            <div class="inner">
+                                <h3 th:text="${totalLogs}"></h3>
+                                <p>Nhật ký hệ thống</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fa fa-history"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-green"><i class="fa fa-unlock"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Tài khoản hoạt động</span>
+                                <span class="info-box-number" th:text="${activeUsers}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-red"><i class="fa fa-lock"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Tài khoản bị khoá</span>
+                                <span class="info-box-number" th:text="${lockedUsers}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </div>
+
+</div>
+
+<!-- Scripts -->
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+
+</body>
+</html>

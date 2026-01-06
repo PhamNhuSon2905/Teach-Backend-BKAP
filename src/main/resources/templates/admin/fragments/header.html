@@ -1,0 +1,48 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security6" lang="vi">
+
+<header class="main-header" th:fragment="header">
+
+    <a th:href="@{/admin/dashboard/index}" class="logo">
+        <span class="logo-mini"><b>BKAP</b></span>
+        <span class="logo-lg"><b>BKAP</b></span>
+    </a>
+
+    <nav class="navbar navbar-static-top">
+        <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+            <span class="sr-only">Toggle navigation</span>
+        </a>
+        <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+                <li class="dropdown user user-menu"
+                    sec:authorize="isAuthenticated()">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+
+                        <img th:src="${#authentication.principal.displayAvatar}" class="user-image" alt="avatar profile">
+                        <span class="hidden-xs">Hi, <span sec:authentication="principal.username"></span></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <!-- User image -->
+                        <li class="user-header">
+                            <img th:src="${#authentication.principal.displayAvatar}" class="img-circle" alt="avatar profile">
+                            <p>
+                                Hệ thống quản lí bài giảng AI
+                                <small>Phát triển tháng 12.2025</small>
+                            </p>
+                        </li>
+
+                        <li class="user-footer">
+                            <div class="pull-left">
+                                <a th:href="@{/admin/profile}" class="btn btn-default btn-flat">Thông tin tài khoản</a>
+                            </div>
+                            <div class="pull-right">
+                                <!-- LOGOUT -->
+                                 <a th:href="@{/admin/auth/logout}" class="btn btn-default btn-flat">Đăng xuất</a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<div th:replace="admin/fragments/head :: head"></div>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <div th:replace="admin/fragments/header :: header"></div>
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1>Danh sách tài khoản</h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a th:href="@{/admin/dashboard/index}">
+                        <i class="fa fa-dashboard"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="active">Quản lý tài khoản</li>
+            </ol>
+        </section>
+
+        <section class="content">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Danh sách tài khoản trong hệ thống</h3>
+                    <div class="box-tools pull-right">
+                        <a th:href="@{/admin/account/create-teacher}" class="btn btn-primary btn-sm">
+                            <i class="fa fa-plus"></i> Thêm mới giảng viên
+                        </a>
+                    </div>
+                </div>
+
+                <div class="box-body">
+                    <form th:action="@{/admin/account/index}" method="get">
+                        <div class="row">
+
+                            <div class="col-md-5">
+                                <input type="text"
+                                       name="keyword"
+                                       class="form-control input-sm"
+                                       placeholder="Tìm theo tên người dùng hoặc email"
+                                       th:value="${keyword}">
+                            </div>
+
+                            <div class="col-md-3">
+                                <select name="role" class="form-control input-sm">
+                                    <option value="">-- Tất cả vai trò --</option>
+                                    <option value="ADMIN"
+                                            th:selected="${role == T(com.bkap.teach.enums.Role).ADMIN}">
+                                        ADMIN
+                                    </option>
+                                    <option value="TEACHER"
+                                            th:selected="${role == T(com.bkap.teach.enums.Role).TEACHER}">
+                                        GIẢNG VIÊN
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-sm btn-info">
+                                    <i class="fa fa-search"></i> Tìm kiếm
+                                </button>
+                                <a th:href="@{/admin/account/index}" class="btn btn-sm btn-default">
+                                    Tải lại
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                    <br />
+
+
+                    <table class="table table-bordered table-hover text-center">
+                        <thead>
+                        <tr>
+                            <th>Tên người dùng</th>
+                            <th>Địa chỉ email</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái tài khoản</th>
+                            <th>Hành động</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="user : ${users}">
+                            <td th:text="${user.username}"></td>
+                            <td th:text="${user.email}"></td>
+                            <td><span th:text="${user.role.name() == 'ADMIN' ? 'Quản trị viên' : 'Giảng viên'}"
+                                      th:classappend="${user.role.name() == 'ADMIN'? 'label label-primary': 'label label-info'}"></span>
+                            </td>
+                            <td>
+										<span th:text="${user.status.name() == 'ACTIVE' ? 'Hoạt động' : 'Bị khóa'}"
+                                              th:classappend="${user.status.name() == 'ACTIVE'
+                                      ? 'label label-success'
+                                      : 'label label-danger'}">
+										</span>
+                            </td>
+                            <td>
+
+                                <a th:href="@{'/admin/account/' + ${user.id}}" class="btn btn-info btn-xs">
+                                    <i class="fa fa-info"></i> Chi tiết tài khoản
+                                </a>
+
+                                <form
+                                        th:if="${user.status.name() == 'ACTIVE'} and ${user.role.name() == 'TEACHER'} and ${user.username != #authentication.name}"
+                                        th:action="@{'/admin/account/' + ${user.id} + '/status'}" method="post"
+                                        style="display:inline">
+
+                                    <input type="hidden" name="status" value="LOCKED" />
+                                    <button class="btn btn-warning btn-xs"
+                                            onclick="return confirm('Bạn muốn khóa tài khoản giảng viên này?')">
+                                        <i class="fa fa-lock"></i> Khoá tài khoản
+                                    </button>
+                                </form>
+
+                                <form
+                                        th:if="${user.status.name() == 'LOCKED'} and ${user.role.name() == 'TEACHER'}"
+                                        th:action="@{'/admin/account/' + ${user.id} + '/status'}" method="post"
+                                        style="display:inline">
+
+                                    <input type="hidden" name="status" value="ACTIVE" />
+                                    <button class="btn btn-success btn-xs"
+                                            onclick="return confirm('Bạn muốn mở khoá tài khoản giảng viên này?')">
+                                        <i class="fa fa-unlock"></i> Mở khoá tài khoản
+                                    </button>
+                                </form>
+
+                                <form
+                                        th:if="${user.status.name() == 'LOCKED'} and ${user.role.name() == 'TEACHER'} and ${user.username != #authentication.name}"
+                                        th:action="@{'/admin/account/' + ${user.id} + '/delete'}" method="post"
+                                        style="display:inline">
+
+                                    <button class="btn btn-danger btn-xs"
+                                            onclick="return confirm('Bạn muốn xóa vĩnh viễn tài khoản của giảng viên này?')">
+                                        <i class="fa fa-trash"></i> Xoá tài khoản
+                                    </button>
+                                </form>
+
+                            </td>
+
+
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(users) and #strings.isEmpty(keyword)}">
+                            <td colspan="5" class="text-muted">
+                                Chưa có tài khoản nào trong hệ thống !
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(users) and not #strings.isEmpty(keyword)}">
+                            <td colspan="5" class="text-warning">
+                                Không tìm thấy tài khoản với từ khoá:
+                                <strong th:text="${keyword}"></strong>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="box-footer clearfix text-right">
+                        <ul class="pagination pagination-sm no-margin">
+                            <li th:if="${currentPage > 1}">
+                                <a th:href="@{/admin/account/index(pageNo=${currentPage-1},keyword=${keyword},role=${role})}">
+                                    «
+                                </a>
+                            </li>
+                            <li th:each="i : ${#numbers.sequence(1, totalPage)}"
+                                th:classappend="${i == currentPage} ? 'active'">
+                                <a th:if="${i != currentPage}" th:href="@{/admin/account/index(pageNo=${i},keyword=${keyword},role=${role})}" th:text="${i}">
+                                </a>
+                                <span th:if="${i == currentPage}" th:text="${i}">
+									</span>
+                            </li>
+
+                            <li th:if="${currentPage < totalPage}">
+                                <a th:href="@{/admin/account/index(pageNo=${currentPage+1},keyword=${keyword},role=${role})}">
+                                    »
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </div>
+</div>
+
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+</body>
+
+</html>

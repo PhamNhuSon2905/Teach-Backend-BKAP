@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Đăng nhập quản trị</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" th:href="@{/assets/favicon/logo_BKAP.ico}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/font-awesome.min.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/AdminLTE.css}">
+    <link rel="stylesheet" th:href="@{/assets/plugins/iCheck/square/blue.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/style.css}">
+    <link rel="stylesheet" th:href="@{/assets/vendor/toastify/css/toastify.css}">
+</head>
+
+<body class="hold-transition login-page">
+<div class="login-box">
+    <div class="login-logo">
+        <a href="#">Đăng nhập quản trị</a>
+    </div>
+
+    <div class="login-box-body">
+        <p class="login-box-msg">Đăng nhập để bắt đầu phiên làm việc của bạn!</p>
+
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+            <span th:text="${error}"></span>
+        </div>
+
+
+
+            <form th:action="@{/admin/auth/login}" method="post" th:object="${adminLoginRequest}">
+            <div class="form-group has-feedback">
+                <label><span style="color:#dd4b39;">*</span> Tên người dùng : </label>
+                <input type="text" th:field="*{username}" name="username" class="form-control"
+                       placeholder="Nhập tên người dùng..."/>
+                <span class="glyphicon glyphicon-user form-control-feedback"></span>
+                <div class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+            </div>
+
+            <div class="form-group has-feedback">
+                <label><span style="color:#dd4b39;">*</span> Mật khẩu : </label>
+                <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu..."
+                       th:field="*{password}"/>
+                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-flat">Đăng nhập</button>
+        </form>
+
+            <p class="text-center" style="margin-top: 15px;">
+                Bạn chưa có tài khoản?
+                <a th:href="@{/admin/auth/register}">Đăng ký ở đây!</a>
+            </p>
+    </div>
+</div>
+</body>
+<script th:src="@{/assets/vendor/toastify/js/toastify.js}"></script>
+<th:block th:replace="admin/fragments/notify-toastify :: notify-toastify"></th:block>
+</html>

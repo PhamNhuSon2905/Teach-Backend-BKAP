@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+
+<div th:replace="admin/fragments/head :: head"></div>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <div th:replace="admin/fragments/header :: header"></div>
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="content-wrapper">
+
+        <section class="content-header">
+            <h1>Giảng viên</h1>
+            <ol class="breadcrumb">
+                <li>
+                    <a th:href="@{/admin/dashboard/index}">
+                        <i class="fa fa-dashboard"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="active">Quản lý giảng viên</li>
+            </ol>
+        </section>
+        <section class="content">
+
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Danh sách giảng viên</h3>
+                </div>
+
+                <div class="box-body">
+
+                    <!-- SEARCH -->
+                    <form th:action="@{/admin/teacher/index}" method="get">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="text"
+                                       name="keyword"
+                                       class="form-control input-sm"
+                                       placeholder="Tìm theo tên hoặc email"
+                                       th:value="${keyword}">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-sm btn-info">
+                                    <i class="fa fa-search"></i> Tìm kiếm
+                                </button>
+                                <a th:href="@{/admin/teacher/index}"
+                                   class="btn btn-sm btn-default">
+                                    Tải lại
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <br/>
+                    <table class="table table-bordered table-hover text-center">
+                        <thead>
+                        <tr>
+                            <th>Tên giảng viên</th>
+                            <th>Email</th>
+                            <th>SĐT</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="t : ${teachers}">
+                            <td th:text="${t.fullname}"></td>
+                            <td th:text="${t.email}"></td>
+                            <td th:text="${t.phone}"></td>
+
+                            <td>
+                                <span class="label label-success"
+                                      th:if="${t.status.name() == 'ACTIVE'}">
+                                    Hoạt động
+                                </span>
+                                <span class="label label-danger"
+                                      th:if="${t.status.name() != 'ACTIVE'}">
+                                    Khoá
+                                </span>
+                            </td>
+
+                            <td>
+
+                                <a th:href="@{/admin/teacher/{id}/grades(id=${t.id})}"
+                                   class="btn btn-primary btn-xs">
+                                    <i class="fa fa-sitemap"></i> Chỉnh sửa khối lớp giảng dạy
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(teachers) and #strings.isEmpty(keyword)}">
+                            <td colspan="5" class="text-muted">
+                                Chưa có giảng viên nào trong hệ thống!
+                            </td>
+                        </tr>
+
+                        <tr th:if="${#lists.isEmpty(teachers) and not #strings.isEmpty(keyword)}">
+                            <td colspan="5" class="text-warning">
+                                Không tìm thấy giảng viên nào với từ khoá :
+                                <strong th:text="${keyword}"></strong>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PAGINATION -->
+                <div class="box-footer clearfix text-right">
+                    <ul class="pagination pagination-sm no-margin">
+
+                        <li th:if="${currentPage > 1}">
+                            <a th:href="@{/admin/teacher/index(pageNo=${currentPage-1},keyword=${keyword})}">
+                                «
+                            </a>
+                        </li>
+
+                        <li class="active">
+                            <a th:text="${currentPage}"></a>
+                        </li>
+
+                        <li th:if="${currentPage < totalPage}">
+                            <a th:href="@{/admin/teacher/index(pageNo=${currentPage+1},keyword=${keyword})}">
+                                »
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+    </div>
+</div>
+
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="admin/fragments/head :: head"></head>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <div th:replace="admin/fragments/header :: header"></div>
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="content-wrapper">
+
+        <section class="content-header">
+            <h1>
+                Chi tiết tài khoản
+                <small>Thông tin người dùng</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a th:href="@{/admin/dashboard/index}"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
+                <li><a th:href="@{/admin/account/index}">Quản lý tài khoản</a></li>
+                <li class="active">Chi tiết tài khoản</li>
+            </ol>
+        </section>
+
+        <section class="content">
+            <div class="row">
+
+                <div class="col-md-6">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                <i class="fa fa-user"></i> Thông tin chi tiết tài khoản
+                            </h3>
+                        </div>
+
+                        <div class="box-body">
+                            <table class="table table-bordered table-striped">
+                                <tr>
+                                    <th>Mã người dùng</th>
+                                    <td th:text="${user.id}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Tên người dùng</th>
+                                    <td th:text="${user.username}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Địa chỉ email</th>
+                                    <td th:text="${user.email}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Họ và tên</th>
+                                    <td th:text="${user.fullname}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Số điện thoại</th>
+                                    <td th:text="${user.phone}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Địa chỉ</th>
+                                    <td th:text="${user.address}"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="box box-info">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                <i class="fa fa-shield"></i> Vai trò & trạng thái tài khoản
+                            </h3>
+                        </div>
+
+                        <div class="box-body">
+
+
+                            <p>
+                                <b>Vai trò của tài khoản : </b>
+                                <span th:if="${user.role.name() == 'ADMIN'}"
+                                      class="label label-primary"><i class="fa fa-shield"></i> Quản trị viên hệ thống</span>
+
+                                <span th:if="${user.role.name() == 'TEACHER'}"
+                                      class="label label-success"><i class="fa fa-graduation-cap"></i> Giảng viên</span>
+
+                            </p>
+
+                            <p>
+                                <b>Trạng thái tài khoản : </b>
+
+                                <span th:if="${user.status.name() == 'ACTIVE'}"
+                                      class="label label-success">
+                            <i class="fa fa-check-circle"></i> Tài khoản đang hoạt động
+                        </span>
+
+                                <span th:if="${user.status.name() == 'LOCKED'}"
+                                      class="label label-danger">
+                            <i class="fa fa-lock"></i> Tài khoản đang bị khóa
+                        </span>
+                            </p>
+
+                        </div>
+
+                        <div class="box-footer">
+                            <a th:href="@{/admin/account/index}" class="btn btn-default">
+                                <i class="fa fa-arrow-left"></i> Quay lại danh sách tài khoản
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+    </div>
+</div>
+
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+</body>
+</html>

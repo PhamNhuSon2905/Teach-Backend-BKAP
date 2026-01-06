@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<div th:replace="admin/fragments/head :: head"></div>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <div th:replace="admin/fragments/header :: header"></div>
+    <div th:replace="admin/fragments/sidebar :: sidebar"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1 style="margin-left: 10px;">Thông tin hồ sơ quản trị viên</h1>
+            <ol class="breadcrumb">
+                <li><a th:href="@{/admin/dashboard/index}"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
+                <li class="active">Hồ sơ thông tin cá nhân</li>
+            </ol>
+        </section>
+
+        <section class="content">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <img th:src="${#strings.isEmpty(user.avatar) ? '/assets/images/default_admin.jpg' : user.avatar}"
+                                 class="img-thumbnail" style="width: 200px; height: 200px;" alt="Avatar"/>
+
+                        </div>
+                        <div class="col-md-8">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Họ và tên quản trị viên</th>
+                                    <td th:text="${user.fullname}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Địa chỉ email quản trị viên</th>
+                                    <td th:text="${user.email}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Số điện thoại quản trị viên</th>
+                                    <td th:text="${user.phone}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Địa chỉ quản trị viên</th>
+                                    <td th:text="${user.address}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Ngày tạo tài khoản quản trị</th>
+                                    <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                </tr>
+
+                                <tr>
+                                    <th>Cập nhật thông tin và mật khẩu lần cuối</th>
+                                    <td th:text="${#temporals.format(user.updatedAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                </tr>
+                            </table>
+                            <a th:href="@{/admin/profile/edit}" class="btn btn-primary">Chỉnh sửa hồ sơ</a>
+                            <a th:href="@{/admin/profile/change-password}" class="btn btn-warning">Đổi mật khẩu</a>
+                            <a th:href="@{/admin/dashboard/index}" class="btn btn-default">Quay lại</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</div>
+<div th:replace="admin/fragments/script :: script"></div>
+<div th:replace="admin/fragments/notify-toastify :: notify-toastify"></div>
+</body>
+</html>
