@@ -57,7 +57,10 @@ public class TeacherAuthController {
                         principal.getId(),
                         principal.getUsername(),
                         principal.getFullName(),
-                        principal.getRole()
+                        principal.getRole(),
+                        principal.getAvatar() != null && !principal.getAvatar().isBlank()
+                                ? principal.getAvatar()
+                                : "/assets/images/default_teacher.jpg"
                 )
         );
     }

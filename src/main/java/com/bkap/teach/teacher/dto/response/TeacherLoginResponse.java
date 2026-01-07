@@ -15,5 +15,6 @@ public class TeacherLoginResponse {
     private String username;
     private String fullname;
     private String role;
+    private String avatar;
 }
 
