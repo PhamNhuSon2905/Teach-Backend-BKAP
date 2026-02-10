@@ -17,7 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +34,7 @@ public class AdminLessonFileService {
 
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024;
 
+ 
     @Value("${upload.lesson-dir}")
     private String lessonUploadDir;
 
@@ -44,17 +47,6 @@ public class AdminLessonFileService {
     @Autowired
     private FileSizeUtil fileSizeUtil;
 
-    public LessonFile findById(Long fileId) {
-        return lessonFileRepository.findById(fileId)
-                .orElseThrow(() -> new RuntimeException("Nội dung bài giảng không tồn tại !"));
-    }
-
-    // tim bai giang theo id
-    public List<LessonFile> findByLesson(Long lessonId) {
-        return lessonFileRepository.findByLessonId(lessonId);
-    }
-
-    // upload va validation file and folder
     public void upload(Long lessonId, MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
@@ -73,34 +65,46 @@ public class AdminLessonFileService {
         LessonFileType fileType = detectType(slugName);
 
         try {
-            Path lessonDir = Paths.get(lessonUploadDir, lessonId.toString());
-            Files.createDirectories(lessonDir);
+           
+            Path rootPath = Paths.get(lessonUploadDir).toAbsolutePath().normalize();
+            Path lessonDir = rootPath.resolve(lessonId.toString());
 
-            /* ========== PDF ========== */
+            System.out.println(">>> Đang upload vào thư mục: " + lessonDir);
+
+            if (!Files.exists(lessonDir)) {
+                Files.createDirectories(lessonDir);
+            }
+
+          
             if (fileType == LessonFileType.PDF) {
                 Path pdfPath = lessonDir.resolve(slugName);
-                file.transferTo(pdfPath.toFile());
+                
+                try (InputStream is = file.getInputStream()) {
+                    Files.copy(is, pdfPath, StandardCopyOption.REPLACE_EXISTING);
+                }
 
-                long size = fileSizeUtil.size(pdfPath);
+                long size = 0;
+                try {
+                     size = fileSizeUtil.size(pdfPath);
+                } catch (Exception e) {
+                     System.err.println("⚠️ Không tính được size PDF: " + e.getMessage());
+                }
 
-                LessonFile lf = new LessonFile();
-                lf.setLesson(lesson);
-                lf.setFileType(LessonFileType.PDF);
-                lf.setFileName(slugName);
-                lf.setFilePath("/uploads/lessons/" + lessonId + "/" + slugName);
-                lf.setFileSize(size);
-                lf.setIsRoot(true);
-
-                lessonFileRepository.save(lf);
+                saveLessonFileRecord(lesson, fileType, slugName, "/uploads/lessons/" + lessonId + "/" + slugName, size, null);
                 return;
             }
 
+          
             String folderSlug = slugName.replaceAll("\\.(zip|rar)$", "");
             Path extractDir = lessonDir.resolve(folderSlug);
-            Files.createDirectories(extractDir);
+
+            if (!Files.exists(extractDir)) Files.createDirectories(extractDir);
 
             Path compressedPath = lessonDir.resolve(slugName);
-            file.transferTo(compressedPath.toFile());
+            
+            try (InputStream is = file.getInputStream()) {
+                Files.copy(is, compressedPath, StandardCopyOption.REPLACE_EXISTING);
+            }
 
             if (fileType == LessonFileType.ZIP) {
                 unzip(compressedPath, extractDir);
@@ -108,33 +112,71 @@ public class AdminLessonFileService {
                 unrar(compressedPath, extractDir);
             }
 
-            // chuan hoa
             normalizeExtractedFolder(extractDir);
 
-            Files.deleteIfExists(compressedPath);
+            String folderWebPath = "/uploads/lessons/" + lessonId + "/" + folderSlug;
+            
+            long folderSize = 0;
+            try {
+                folderSize = fileSizeUtil.size(extractDir);
+            } catch (Exception e) {
+                System.err.println("⚠️ Không tính được size Folder: " + e.getMessage());
+            }
 
-            String folderPath = "/uploads/lessons/" + lessonId + "/" + folderSlug;
-
-            long folderSize = fileSizeUtil.size(extractDir);
-
-            LessonFile lf = new LessonFile();
-            lf.setLesson(lesson);
-            lf.setFileType(fileType);
-            lf.setFileName(folderSlug);
-            lf.setFilePath(folderPath);
-            lf.setFileSize(folderSize);
-            lf.setFolderPath(folderPath);
-            lf.setIsRoot(true);
-
-            lessonFileRepository.save(lf);
+            saveLessonFileRecord(lesson, fileType, folderSlug, folderWebPath, folderSize, folderWebPath);
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Tải lên & giải nén bài giảng thất bại: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi hệ thống: " + e.getMessage(), e);
         }
     }
 
-    // kiem tra duoi file
+    
+    private void saveLessonFileRecord(Lesson lesson, LessonFileType type, String name, String path, long size, String folderPath) {
+        LessonFile lf = new LessonFile();
+        lf.setLesson(lesson);
+        lf.setFileType(type);
+        lf.setFileName(name);
+        lf.setFilePath(path);
+        lf.setFileSize(size);
+        lf.setFolderPath(folderPath);
+        lf.setIsRoot(true);
+        lessonFileRepository.save(lf);
+    }
+
+    public void deleteLessonFile(Long fileId) {
+        LessonFile file = lessonFileRepository.findById(fileId).orElseThrow(() -> new RuntimeException("Lỗi"));
+        Long lessonId = file.getLesson().getId();
+        try {
+          
+            Path rootDir = Paths.get(lessonUploadDir).toAbsolutePath().normalize();
+            Path lessonDir = rootDir.resolve(lessonId.toString());
+
+            if (file.getFileType() == LessonFileType.PDF) {
+                Files.deleteIfExists(lessonDir.resolve(file.getFileName()));
+            } else {
+                Path folderPath = lessonDir.resolve(file.getFileName());
+                deleteDirectoryRecursively(folderPath);
+                String ext = (file.getFileType() == LessonFileType.ZIP) ? ".zip" : ".rar";
+                Files.deleteIfExists(lessonDir.resolve(file.getFileName() + ext));
+            }
+            lessonFileRepository.delete(file);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi xóa: " + e.getMessage());
+        }
+    }
+
+  
+
+    public LessonFile findById(Long fileId) {
+        return lessonFileRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("Nội dung bài giảng không tồn tại !"));
+    }
+
+    public List<LessonFile> findByLesson(Long lessonId) {
+        return lessonFileRepository.findByLessonId(lessonId);
+    }
+
     private LessonFileType detectType(String name) {
         name = name.toLowerCase();
         if (name.endsWith(".pdf")) return LessonFileType.PDF;
@@ -143,149 +185,107 @@ public class AdminLessonFileService {
         throw new RuntimeException("Không hỗ trợ định dạng tệp vừa tải !");
     }
 
-    // giai nen zip
     private void unzip(Path zipFile, Path targetDir) throws IOException {
-        try (ZipInputStream zis = new ZipInputStream(
-                new BufferedInputStream(Files.newInputStream(zipFile)))) {
-
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(Files.newInputStream(zipFile)))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 Path newPath = targetDir.resolve(entry.getName()).normalize();
-                if (!newPath.startsWith(targetDir)) {
-                    throw new IOException("Tệp zip không an toàn có dấu hiệu xâm nhập !");
-                }
+                if (!newPath.startsWith(targetDir)) throw new IOException("Zip Slip detected");
 
                 if (entry.isDirectory()) {
                     Files.createDirectories(newPath);
                 } else {
-                    Files.createDirectories(newPath.getParent());
+                    if (newPath.getParent() != null) Files.createDirectories(newPath.getParent());
                     Files.copy(zis, newPath, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
         }
     }
 
-    //  giai nen rar 4
     private void unrar(Path rarFile, Path targetDir) throws IOException {
         try (Archive archive = new Archive(rarFile.toFile())) {
             FileHeader header;
             while ((header = archive.nextFileHeader()) != null) {
-
-                String rawName = header.isUnicode()
-                        ? header.getFileNameW()
-                        : header.getFileNameString();
-
+                String rawName = header.isUnicode() ? header.getFileNameW() : header.getFileNameString();
                 rawName = rawName.replace("\\", "/").trim();
                 if (rawName.isEmpty()) continue;
 
                 Path outPath = targetDir.resolve(rawName).normalize();
-                if (!outPath.startsWith(targetDir)) {
-                    throw new IOException("Tệp rar không an toàn có dấu hiệu xâm nhập !");
-                }
+                if (!outPath.startsWith(targetDir)) throw new IOException("Rar Slip detected");
 
                 if (header.isDirectory()) {
                     Files.createDirectories(outPath);
                 } else {
-                    Files.createDirectories(outPath.getParent());
+                    if (outPath.getParent() != null) Files.createDirectories(outPath.getParent());
                     try (OutputStream os = Files.newOutputStream(outPath)) {
                         archive.extractFile(header, os);
                     }
                 }
             }
         } catch (RarException e) {
-            throw new IOException("Không thể mở tệp RAR", e);
+            throw new IOException("Lỗi giải nén RAR", e);
         }
     }
 
-    //NORMALIZE (CORE LOGIC)
     private void normalizeExtractedFolder(Path extractDir) throws IOException {
-
-        // Tim thu muc chua index.html
+        Path indexFile;
         Path indexRoot;
-        try (var stream = Files.walk(extractDir, 5)) {
-            indexRoot = stream
-                    .filter(p -> p.getFileName().toString().equalsIgnoreCase("index.html"))
-                    .map(Path::getParent)
-                    .findFirst()
-                    .orElseThrow(() ->
-                            new RuntimeException("Không tìm thấy index.html trong bài giảng"));
+        try (var stream = Files.walk(extractDir, 10)) {
+            indexFile = stream.filter(p -> p.getFileName().toString().equalsIgnoreCase("index.html")).findFirst()
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy index.html"));
+            indexRoot = indexFile.getParent();
         }
-
+        overrideHtmlBackground(indexFile);
         if (indexRoot.equals(extractDir)) return;
-
         try (var stream = Files.list(indexRoot)) {
-            for (Path item : stream.toList()) {
-                Path target = extractDir.resolve(item.getFileName());
-                if (!Files.exists(target)) {
-                    Files.move(item, target, StandardCopyOption.REPLACE_EXISTING);
-                }
+            for (Path source : stream.toList()) {
+                Path target = extractDir.resolve(source.getFileName());
+                if (source.equals(target)) continue;
+                moveContent(source, target);
             }
         }
-
         cleanupEmptyDirs(extractDir);
     }
-    // lam sach o dia
-    private void cleanupEmptyDirs(Path root) throws IOException {
-        Files.walk(root)
-                .sorted((a, b) -> b.compareTo(a))
-                .forEach(p -> {
-                    try {
-                        if (Files.isDirectory(p) && Files.list(p).findAny().isEmpty()) {
-                            Files.delete(p);
-                        }
-                    } catch (IOException ignored) {
-                    }
-                });
-    }
 
-    // xoa file PDF và thu muc sau khi upload len
-    public void deleteLessonFile(Long fileId) {
-
-        LessonFile file = lessonFileRepository.findById(fileId)
-                .orElseThrow(() -> new RuntimeException("Nội dung bài giảng không tồn tại"));
-
-        Long lessonId = file.getLesson().getId();
-
-        try {
-
-            if (file.getFileType() == LessonFileType.PDF) {
-                Path pdfPath = Paths.get(
-                        lessonUploadDir,
-                        lessonId.toString(),
-                        file.getFileName()
-                );
-
-                Files.deleteIfExists(pdfPath);
-
-            } else {
-                Path folderPath = Paths.get(
-                        lessonUploadDir,
-                        lessonId.toString(),
-                        file.getFileName()
-                );
-
-                deleteDirectoryRecursively(folderPath);
+    private void moveContent(Path source, Path target) throws IOException {
+        if (Files.isDirectory(source)) {
+            if (!Files.exists(target)) Files.createDirectories(target);
+            try (var stream = Files.list(source)) {
+                for (Path child : stream.toList()) {
+                    moveContent(child, target.resolve(child.getFileName()));
+                }
             }
-
-            lessonFileRepository.delete(file);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Không thể xoá nội dung bài giảng");
+            deleteDirectoryRecursively(source); 
+        } else {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
-    // xoa tuan tu tu file con toi file cha
-    private void deleteDirectoryRecursively(Path root) throws IOException {
 
-        if (!Files.exists(root)) return;
-
-        Files.walk(root)
-                .sorted((a, b) -> b.compareTo(a))
-                .forEach(p -> {
-                    try {
-                        Files.deleteIfExists(p);
-                    } catch (IOException ignored) {}
-                });
+    private void overrideHtmlBackground(Path indexHtmlPath) {
+        try {
+            String content = Files.readString(indexHtmlPath, StandardCharsets.UTF_8);
+            String customCss = "<style>html, body { background-color: rgba(243, 236, 236, 0) !important; }</style>";
+            content = content.contains("</head>") ? content.replace("</head>", customCss + "</head>") : customCss + content;
+            Files.writeString(indexHtmlPath, content, StandardCharsets.UTF_8);
+        } catch (Exception ignored) {}
     }
 
+    private void cleanupEmptyDirs(Path root) throws IOException {
+        try (var stream = Files.walk(root)) {
+            stream.sorted((a, b) -> b.compareTo(a)).forEach(p -> {
+                try {
+                    if (Files.isDirectory(p) && !p.equals(root) && Files.list(p).findAny().isEmpty()) Files.delete(p);
+                } catch (IOException ignored) {}
+            });
+        }
+    }
 
+    private void deleteDirectoryRecursively(Path root) throws IOException {
+        if (!Files.exists(root)) return;
+        try (var stream = Files.walk(root)) {
+            stream.sorted((a, b) -> b.compareTo(a)).forEach(p -> {
+                try { Files.deleteIfExists(p); } catch (IOException ignored) {}
+            });
+        }
+    }
 }
