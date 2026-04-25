@@ -49,5 +49,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .setCachePeriod(0);
         
         logger.info("✅ Static resources đã được cấu hình trỏ về: {}", uploadDir);
+        
+        
     }
 }
